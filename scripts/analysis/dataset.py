@@ -22,13 +22,6 @@ class DatasetAnalysis:
         self.title = title
 
     def run(self):
-        statistics = self.statistics.run()
+        self.statistics.run()
         pairs = self.correlation.run()
         ScatterPlots(self.df, pairs, self.draw_scatter, self.top_n, self.title).run()
-        return {
-            "statistics": statistics,
-            "standard_deviations": statistics["std"].to_dict(),
-            "correlation_matrix": self.correlation.correlation_matrix,
-            "all_correlated_pairs": self.correlation.all_pairs,
-            "strong_correlated_pairs": pairs,
-        }

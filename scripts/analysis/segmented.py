@@ -27,22 +27,22 @@ class SegmentedDatasetAnalysis:
         print(f"\nNumber of engines: {groups.ngroups}")
         print("Engine IDs:", list(groups.groups))
         DatasetStatistics(self.df).print_quality_checks()
-        results = []
+        engine_correlations = []
         for engine_id, engine_df in groups:
             title = f"ENGINE ID: {engine_id}"
             print(f"\n{'#' * 80}\n{title}\nROWS: {len(engine_df)}\n{'#' * 80}")
             should_plot = self.draw_scatter and (
                 self.engines_to_plot is None or engine_id in self.engines_to_plot
             )
-            result = DatasetAnalysis(
+            analysis = DatasetAnalysis(
                 engine_df.drop(columns=[self.engine_id_column]),
                 threshold=self.threshold,
                 draw_scatter=should_plot,
                 top_n=self.top_n,
                 title=title,
-            ).run()
-            results.append({"engine_id": engine_id, "rows": len(engine_df), **result})
+            )
+            analysis.run()
+            engine_correlations.append(analysis.correlation.all_pairs)
 
-        summary = CorrelationSummary(results, self.threshold).run()
-        print(f"\nANALYSIS FINISHED\nAnalyzed engines: {len(results)}")
-        return {"engines": results, "correlation_summary": summary}
+        CorrelationSummary(engine_correlations, self.threshold).run()
+        print(f"\nANALYSIS FINISHED\nAnalyzed engines: {len(engine_correlations)}")

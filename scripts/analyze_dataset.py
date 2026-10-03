@@ -19,7 +19,7 @@ def main():
     print(df.head())
     print("\nDataset shape:")
     print(df.shape)
-    return DatasetAnalysis(
+    DatasetAnalysis(
         df,
         threshold=CORRELATION_THRESHOLD,
         draw_scatter=DRAW_SCATTER,

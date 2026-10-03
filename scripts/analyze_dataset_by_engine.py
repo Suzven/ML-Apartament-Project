@@ -21,7 +21,7 @@ def main():
     print(df.head())
     print("\nDataset shape:")
     print(df.shape)
-    return SegmentedDatasetAnalysis(
+    SegmentedDatasetAnalysis(
         df,
         engine_id_column=ENGINE_ID_COLUMN,
         threshold=CORRELATION_THRESHOLD,

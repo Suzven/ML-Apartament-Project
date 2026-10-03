@@ -11,36 +11,37 @@ class DatasetStatistics:
         print("\nDuplicate rows:")
         print(self.df.duplicated().sum())
 
-    def run(self) -> pd.DataFrame:
+    def run(self):
         self.print_quality_checks()
-        numeric_df = self.df.select_dtypes(include="number")
-        statistics = pd.DataFrame({
-            "mean": numeric_df.mean(),
-            "median": numeric_df.median(),
-            "min": numeric_df.min(),
-            "max": numeric_df.max(),
-        })
-        statistics["mode"] = pd.Series(
-            {column: values.mode().tolist() for column, values in numeric_df.items()},
-            dtype=object,
-        )
-        statistics["std"] = numeric_df.std(ddof=0)
-        statistics["variance"] = numeric_df.var(ddof=0)
-        statistics["range"] = statistics["max"] - statistics["min"]
-        statistics["95 percentile"] = numeric_df.quantile(0.95)
-        statistics = statistics[
-            ["mean", "median", "mode", "std", "variance", "min", "max", "range", "95 percentile"]
-        ]
+        feature_std = pd.Series(dtype=float)
 
-        for column, values in statistics.iterrows():
+        for column, values in self.df.select_dtypes(include="number").items():
+            values = values.dropna()
+            mean = values.mean()
+            median = values.median()
+            modes = values.mode().tolist()
+            std = values.std(ddof=0)
+            variance = values.var(ddof=0)
+            min_value = values.min()
+            max_value = values.max()
+            value_range = max_value - min_value
+            percentile_95 = values.quantile(0.95)
+            feature_std.loc[column] = std
+
             print(f"\n{'=' * 50}\nFeature {column}\n{'=' * 50}")
-            for name, value in values.items():
-                print(f"{name}: {value}")
+            print("mean:", mean)
+            print("median:", median)
+            print("mode:", modes)
+            print("std:", std)
+            print("variance:", variance)
+            print("min:", min_value)
+            print("max:", max_value)
+            print("range:", value_range)
+            print("95 percentile:", percentile_95)
 
-        sorted_std = statistics["std"].sort_values(ascending=False, kind="stable")
+        sorted_std = feature_std.sort_values(ascending=False, kind="stable")
         print(f"\n{'=' * 50}\nFEATURES SORTED BY STD\n{'=' * 50}")
         for column, std in sorted_std.items():
             print(f"Feature {column}: std = {std}")
         print("\nFeature order by std:")
         print(sorted_std.index.tolist())
-        return statistics
