@@ -3,10 +3,14 @@ from pathlib import Path
 import pandas as pd
 
 if __package__:
+    from . import model_config
+    from .model_training import ModelTraining
     from .entity import DatasetEntity
     from .preprocessing import DataCleaning, DatasetSplit, StandardScaling
     from .analysis import SegmentedDatasetAnalysis
 else:
+    import model_config
+    from model_training import ModelTraining
     from entity import DatasetEntity
     from preprocessing import DataCleaning, DatasetSplit, StandardScaling
     from analysis import SegmentedDatasetAnalysis
@@ -19,7 +23,7 @@ TOP_N_SCATTER = 5
 ENGINES_TO_PLOT = [1]
 
 
-def main():
+def main(model=None):
     df = pd.read_csv(DATASET_PATH, sep=r"\s+", header=None)
     dataset = DatasetEntity(df, engine_id_column=ENGINE_ID_COLUMN)
     split = DatasetSplit(dataset)
@@ -42,6 +46,15 @@ def main():
 
     scaling = StandardScaling(split.train, split.validation)
     scaling.run()
+
+    if model is None:
+        model = model_config.MODEL_CLASS()
+    ModelTraining(
+        model=model,
+        train=split.train,
+        validation=split.validation,
+        draw_plots=model_config.DRAW_EVALUATION_PLOTS,
+    ).run()
 
 
 if __name__ == "__main__":
