@@ -22,6 +22,11 @@ class DatasetEntity:
         print("\nTargets:")
         print(self.targets.head(rows).to_string())
         print("\nEngine / current cycle / RUL alignment:")
-        preview = self.samples[[self.engine_id_column, self.cycle_column]].head(rows).copy()
+        preview = self.samples[[self.cycle_column]].head(rows).copy()
+        if self.engine_id_column in self.samples.columns:
+            engine_ids = self.samples[self.engine_id_column]
+        else:
+            engine_ids = self.engine_ids
+        preview.insert(0, self.engine_id_column, engine_ids.head(rows))
         preview["RUL"] = self.targets.head(rows)
         print(preview.to_string())

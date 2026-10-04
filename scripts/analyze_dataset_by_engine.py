@@ -3,10 +3,12 @@ from pathlib import Path
 import pandas as pd
 
 if __package__:
-    from .dataset_entity import DatasetEntity
+    from .entity import DatasetEntity
+    from .preprocessing import DataCleaning, DatasetSplit
     from .analysis import SegmentedDatasetAnalysis
 else:
-    from dataset_entity import DatasetEntity
+    from entity import DatasetEntity
+    from preprocessing import DataCleaning, DatasetSplit
     from analysis import SegmentedDatasetAnalysis
 
 DATASET_PATH = Path(__file__).with_name("train_FD001.txt")
@@ -20,16 +22,23 @@ ENGINES_TO_PLOT = [1]
 def main():
     df = pd.read_csv(DATASET_PATH, sep=r"\s+", header=None)
     dataset = DatasetEntity(df, engine_id_column=ENGINE_ID_COLUMN)
-    print("\nDataset shape:")
-    print(dataset.samples.shape)
-    SegmentedDatasetAnalysis(
-        dataset.samples,
-        engine_id_column=ENGINE_ID_COLUMN,
-        threshold=CORRELATION_THRESHOLD,
-        draw_scatter=DRAW_SCATTER,
-        top_n=TOP_N_SCATTER,
-        engines_to_plot=ENGINES_TO_PLOT,
-    ).run()
+    split = DatasetSplit(dataset)
+    split.run()
+
+    for name, subset in [("TRAIN", split.train), ("VALIDATION", split.validation)]:
+        print(f"\n{name}")
+        DataCleaning(subset).run()
+        print("\nDataset shape:")
+        print(subset.samples.shape)
+        SegmentedDatasetAnalysis(
+            subset.samples,
+            engine_id_column=ENGINE_ID_COLUMN,
+            engine_ids=subset.engine_ids,
+            threshold=CORRELATION_THRESHOLD,
+            draw_scatter=DRAW_SCATTER,
+            top_n=TOP_N_SCATTER,
+            engines_to_plot=ENGINES_TO_PLOT,
+        ).run()
 
 
 if __name__ == "__main__":
