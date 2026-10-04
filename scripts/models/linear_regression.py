@@ -5,7 +5,7 @@ class LinearRegression:
     def __init__(self):
         self.model = SklearnLinearRegression(fit_intercept=True)
 
-    def fit(self, samples, targets):
+    def fit(self, samples, targets, groups=None):
         self.model.fit(samples, targets)
 
     def predict(self, samples):

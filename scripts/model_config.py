@@ -1,7 +1,7 @@
 if __package__:
-    from .models import LinearRegression
+    from .models import PolynomialRidge
 else:
-    from models import LinearRegression
+    from models import PolynomialRidge
 
-MODEL_CLASS = LinearRegression
+MODEL_CLASS = PolynomialRidge
 DRAW_EVALUATION_PLOTS = True

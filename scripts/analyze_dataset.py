@@ -39,11 +39,11 @@ def main(model=None):
             top_n=TOP_N_SCATTER,
         ).run()
 
-    scaling = StandardScaling(split.train, split.validation)
-    scaling.run()
-
     if model is None:
         model = model_config.MODEL_CLASS()
+    if not getattr(model, "uses_internal_scaling", False):
+        scaling = StandardScaling(split.train, split.validation)
+        scaling.run()
     ModelTraining(
         model=model,
         train=split.train,

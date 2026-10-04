@@ -1,4 +1,6 @@
 from .dummy import Dummy
 from .linear_regression import LinearRegression
 
-__all__ = ["Dummy", "LinearRegression"]
+from .polynomial_ridge import PolynomialRidge
+
+__all__ = ["Dummy", "LinearRegression", "PolynomialRidge"]

@@ -12,7 +12,7 @@ class ModelTraining:
         self.draw_plots = draw_plots
 
     def run(self):
-        self.model.fit(self.train.samples, self.train.targets)
+        self.model.fit(self.train.samples, self.train.targets, groups=self.train.engine_ids)
         model_name = type(self.model).__name__
         for name, dataset in [("TRAIN", self.train), ("VALIDATION", self.validation)]:
             predictions = self.model.predict(dataset.samples)

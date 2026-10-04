@@ -44,11 +44,11 @@ def main(model=None):
             engines_to_plot=ENGINES_TO_PLOT,
         ).run()
 
-    scaling = StandardScaling(split.train, split.validation)
-    scaling.run()
-
     if model is None:
         model = model_config.MODEL_CLASS()
+    if not getattr(model, "uses_internal_scaling", False):
+        scaling = StandardScaling(split.train, split.validation)
+        scaling.run()
     ModelTraining(
         model=model,
         train=split.train,
