@@ -1,7 +1,7 @@
 if __package__:
-    from .models import Dummy
+    from .models import LinearRegression
 else:
-    from models import Dummy
+    from models import LinearRegression
 
-MODEL_CLASS = Dummy
+MODEL_CLASS = LinearRegression
 DRAW_EVALUATION_PLOTS = True
