@@ -1,7 +1,7 @@
 if __package__:
-    from .models import GradientBoosting
+    from .models import PolynomialRidge
 else:
-    from models import GradientBoosting
+    from models import PolynomialRidge
 
-MODEL_CLASS = GradientBoosting
+MODEL_CLASS = PolynomialRidge
 DRAW_EVALUATION_PLOTS = True

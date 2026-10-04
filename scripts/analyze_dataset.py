@@ -6,13 +6,13 @@ if __package__:
     from . import model_config
     from .model_training import ModelTraining
     from .entity import DatasetEntity
-    from .preprocessing import DataCleaning, DatasetSplit
+    from .preprocessing import DatasetPreprocessing
     from .analysis import DatasetAnalysis
 else:
     import model_config
     from model_training import ModelTraining
     from entity import DatasetEntity
-    from preprocessing import DataCleaning, DatasetSplit
+    from preprocessing import DatasetPreprocessing
     from analysis import DatasetAnalysis
 
 DATASET_PATH = Path(__file__).with_name("train_FD001.txt")
@@ -24,12 +24,11 @@ TOP_N_SCATTER = 10
 def main(model=None):
     df = pd.read_csv(DATASET_PATH, sep=r"\s+", header=None)
     dataset = DatasetEntity(df)
-    split = DatasetSplit(dataset)
+    split = DatasetPreprocessing(dataset)
     split.run()
 
     for name, subset in [("TRAIN", split.train), ("VALIDATION", split.validation)]:
         print(f"\n{name}")
-        DataCleaning(subset).run()
         print("\nDataset shape:")
         print(subset.samples.shape)
         DatasetAnalysis(

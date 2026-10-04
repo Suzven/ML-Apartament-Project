@@ -15,16 +15,19 @@ class CorrelationAnalysis:
 
     def run(self):
         self.correlation_matrix = self.df.corr(method="pearson", numeric_only=True)
-        self.all_pairs = [
-            (first, second, correlation)
-            for first, second in combinations(self.correlation_matrix.columns, 2)
-            if pd.notna(correlation := self.correlation_matrix.loc[first, second])
-        ]
-        self.strong_pairs = sorted(
-            (pair for pair in self.all_pairs if abs(pair[2]) >= self.threshold),
-            key=lambda pair: abs(pair[2]),
-            reverse=True,
-        )
+        self.all_pairs = []
+        self.strong_pairs = []
+        for first, second in combinations(self.correlation_matrix.columns, 2):
+            correlation = self.correlation_matrix.loc[first, second]
+            if pd.isna(correlation):
+                continue
+
+            pair = (first, second, correlation)
+            self.all_pairs.append(pair)
+            if abs(correlation) >= self.threshold:
+                self.strong_pairs.append(pair)
+
+        self.strong_pairs.sort(key=lambda pair: abs(pair[2]), reverse=True)
         print(f"\n{'=' * 50}\nCORRELATION MATRIX\n{'=' * 50}")
         print(self.correlation_matrix)
         print(

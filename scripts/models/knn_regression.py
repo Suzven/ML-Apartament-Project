@@ -3,8 +3,10 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
+from .base import GridSearchRegression
 
-class KNNRegression:
+
+class KNNRegression(GridSearchRegression):
     def __init__(self):
         pipeline = Pipeline([
             ("scaling", StandardScaler()),
@@ -22,23 +24,3 @@ class KNNRegression:
             n_jobs=1,
             error_score="raise",
         )
-
-    def fit(self, samples, targets, groups=None, validation=None):
-        if groups is None:
-            raise ValueError("Engine IDs are required for grouped cross-validation")
-        self.model.fit(samples, targets, groups=groups)
-        print("\nKNNRegression | best n_neighbors:", self.model.best_params_["regression__n_neighbors"])
-        print("KNNRegression | best weights:", self.model.best_params_["regression__weights"])
-        print("KNNRegression | best mean CV RMSE:", -self.model.best_score_)
-        print("\nKNNRegression | CV results:")
-        results = self.model.cv_results_
-        for index in results["rank_test_score"].argsort():
-            parameters = results["params"][index]
-            rmse = -results["mean_test_score"][index]
-            print(
-                f"n_neighbors={parameters['regression__n_neighbors']}, "
-                f"weights={parameters['regression__weights']}, mean CV RMSE={rmse:.6f}"
-            )
-
-    def predict(self, samples):
-        return self.model.predict(samples)

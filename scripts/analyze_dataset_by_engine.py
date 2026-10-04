@@ -6,13 +6,13 @@ if __package__:
     from . import model_config
     from .model_training import ModelTraining
     from .entity import DatasetEntity
-    from .preprocessing import DataCleaning, DatasetSplit
+    from .preprocessing import DatasetPreprocessing
     from .analysis import SegmentedDatasetAnalysis
 else:
     import model_config
     from model_training import ModelTraining
     from entity import DatasetEntity
-    from preprocessing import DataCleaning, DatasetSplit
+    from preprocessing import DatasetPreprocessing
     from analysis import SegmentedDatasetAnalysis
 
 DATASET_PATH = Path(__file__).with_name("train_FD001.txt")
@@ -21,17 +21,17 @@ CORRELATION_THRESHOLD = 0.8
 DRAW_SCATTER = False
 TOP_N_SCATTER = 5
 ENGINES_TO_PLOT = [1]
+REPORT_ROOT = Path(__file__).resolve().parent.parent / "reports" / "model_evaluation_by_engine"
 
 
 def main(model=None):
     df = pd.read_csv(DATASET_PATH, sep=r"\s+", header=None)
     dataset = DatasetEntity(df, engine_id_column=ENGINE_ID_COLUMN)
-    split = DatasetSplit(dataset)
+    split = DatasetPreprocessing(dataset)
     split.run()
 
     for name, subset in [("TRAIN", split.train), ("VALIDATION", split.validation)]:
         print(f"\n{name}")
-        DataCleaning(subset).run()
         print("\nDataset shape:")
         print(subset.samples.shape)
         SegmentedDatasetAnalysis(
@@ -50,7 +50,8 @@ def main(model=None):
         model=model,
         train=split.train,
         validation=split.validation,
-        draw_plots=model_config.DRAW_EVALUATION_PLOTS,
+        draw_plots=False,
+        report_directory=REPORT_ROOT / type(model).__name__,
     ).run()
 
 
