@@ -4,11 +4,11 @@ import pandas as pd
 
 if __package__:
     from .entity import DatasetEntity
-    from .preprocessing import DataCleaning, DatasetSplit
+    from .preprocessing import DataCleaning, DatasetSplit, StandardScaling
     from .analysis import SegmentedDatasetAnalysis
 else:
     from entity import DatasetEntity
-    from preprocessing import DataCleaning, DatasetSplit
+    from preprocessing import DataCleaning, DatasetSplit, StandardScaling
     from analysis import SegmentedDatasetAnalysis
 
 DATASET_PATH = Path(__file__).with_name("train_FD001.txt")
@@ -39,6 +39,9 @@ def main():
             top_n=TOP_N_SCATTER,
             engines_to_plot=ENGINES_TO_PLOT,
         ).run()
+
+    scaling = StandardScaling(split.train, split.validation)
+    scaling.run()
 
 
 if __name__ == "__main__":
