@@ -5,8 +5,6 @@ from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 
 
 class PolynomialRidge:
-    uses_internal_scaling = True
-
     def __init__(self):
         pipeline = Pipeline([
             ("input_scaling", StandardScaler()),

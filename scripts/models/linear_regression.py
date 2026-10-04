@@ -1,9 +1,14 @@
 from sklearn.linear_model import LinearRegression as SklearnLinearRegression
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 
 
 class LinearRegression:
     def __init__(self):
-        self.model = SklearnLinearRegression(fit_intercept=True)
+        self.model = Pipeline([
+            ("scaling", StandardScaler()),
+            ("regression", SklearnLinearRegression(fit_intercept=True)),
+        ])
 
     def fit(self, samples, targets, groups=None):
         self.model.fit(samples, targets)

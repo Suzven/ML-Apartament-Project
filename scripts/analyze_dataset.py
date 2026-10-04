@@ -6,13 +6,13 @@ if __package__:
     from . import model_config
     from .model_training import ModelTraining
     from .entity import DatasetEntity
-    from .preprocessing import DataCleaning, DatasetSplit, StandardScaling
+    from .preprocessing import DataCleaning, DatasetSplit
     from .analysis import DatasetAnalysis
 else:
     import model_config
     from model_training import ModelTraining
     from entity import DatasetEntity
-    from preprocessing import DataCleaning, DatasetSplit, StandardScaling
+    from preprocessing import DataCleaning, DatasetSplit
     from analysis import DatasetAnalysis
 
 DATASET_PATH = Path(__file__).with_name("train_FD001.txt")
@@ -41,9 +41,6 @@ def main(model=None):
 
     if model is None:
         model = model_config.MODEL_CLASS()
-    if not getattr(model, "uses_internal_scaling", False):
-        scaling = StandardScaling(split.train, split.validation)
-        scaling.run()
     ModelTraining(
         model=model,
         train=split.train,
