@@ -22,7 +22,7 @@ class PolynomialRidge:
             error_score="raise",
         )
 
-    def fit(self, samples, targets, groups=None):
+    def fit(self, samples, targets, groups=None, validation=None):
         if groups is None:
             raise ValueError("Engine IDs are required for grouped cross-validation")
         self.model.fit(samples, targets, groups=groups)

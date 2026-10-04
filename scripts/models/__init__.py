@@ -1,6 +1,9 @@
+from .decision_tree import DecisionTree
 from .dummy import Dummy
+from .gradient_boosting import GradientBoosting
+from .knn_regression import KNNRegression
 from .linear_regression import LinearRegression
 
 from .polynomial_ridge import PolynomialRidge
 
-__all__ = ["Dummy", "LinearRegression", "PolynomialRidge"]
+__all__ = ["Dummy", "LinearRegression", "PolynomialRidge", "KNNRegression", "DecisionTree", "GradientBoosting"]

@@ -10,7 +10,7 @@ class LinearRegression:
             ("regression", SklearnLinearRegression(fit_intercept=True)),
         ])
 
-    def fit(self, samples, targets, groups=None):
+    def fit(self, samples, targets, groups=None, validation=None):
         self.model.fit(samples, targets)
 
     def predict(self, samples):
