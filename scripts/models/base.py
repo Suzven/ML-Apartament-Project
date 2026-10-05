@@ -1,6 +1,4 @@
 class RegressionModel:
-    requires_history = False
-
     def fit(self, samples, targets, groups=None, validation=None):
         self.model.fit(samples, targets)
 

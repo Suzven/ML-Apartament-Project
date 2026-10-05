@@ -10,21 +10,15 @@ import pandas as pd
 from scripts.analysis import CorrelationAnalysis
 from scripts.analysis.grouped_model_evaluation import GroupedModelEvaluation
 from scripts.entity import DatasetEntity
-from scripts.history_experiment import HistoryExperiment
 from scripts.model_evaluation_metrics import RegressionMetrics
-from scripts.model_training import ModelTraining
 from scripts.models import (
     DecisionTree,
     Dummy,
-    GradientBoosting,
-    HistoryPolynomialRidge,
     KNNRegression,
     LinearRegression,
-    PolynomialKNN,
-    PolynomialLasso,
     PolynomialRidge,
 )
-from scripts.preprocessing import DataCleaning, DatasetPreprocessing, SensorHistory
+from scripts.preprocessing import DatasetPreprocessing
 
 
 def raw_samples(engine_ids=(1, 2, 3, 4, 5, 81), cycles_per_engine=12):
@@ -48,19 +42,15 @@ def prepared_split():
 
 
 def small_grid(model):
-    if isinstance(model, (KNNRegression, PolynomialKNN)):
+    if isinstance(model, KNNRegression):
         parameters = {
             "regression__n_neighbors": [3],
             "regression__weights": ["uniform"],
         }
-    elif isinstance(model, (PolynomialRidge, HistoryPolynomialRidge)):
+    elif isinstance(model, PolynomialRidge):
         parameters = {"ridge__alpha": [100]}
-    elif isinstance(model, PolynomialLasso):
-        parameters = {"lasso__alpha": [1]}
     elif isinstance(model, DecisionTree):
         parameters = {"max_depth": [3]}
-    elif isinstance(model, GradientBoosting):
-        parameters = {"n_estimators": [3], "max_depth": [2]}
     else:
         return
     model.model.set_params(param_grid=parameters, verbose=0)
@@ -71,7 +61,7 @@ class DatasetTests(unittest.TestCase):
         split = prepared_split()
         self.assertEqual(set(split.train.engine_ids), {1, 2, 3, 4, 5})
         self.assertEqual(set(split.validation.engine_ids), {81})
-        self.assertEqual(list(split.train.samples.columns), [1, 6, 7, 8, 11, 13, 15, 16, 18, 21, 24, 25])
+        self.assertEqual(list(split.train.samples.columns), [1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 24, 25])
         pd.testing.assert_series_equal(split.train.targets, (12 - split.train.cycles).rename("RUL"))
         self.assertTrue(split.train.samples.index.equals(split.train.targets.index))
         self.assertTrue(split.train.samples.index.equals(split.train.engine_ids.index))
@@ -91,61 +81,6 @@ class DatasetTests(unittest.TestCase):
             dataset = DatasetEntity(raw_samples(engine_ids=(101,)))
             with self.assertRaises(ValueError):
                 DatasetPreprocessing(dataset).run()
-
-
-class HistoryTests(unittest.TestCase):
-    def clean_dataset(self, samples):
-        with redirect_stdout(io.StringIO()):
-            dataset = DatasetEntity(samples)
-            DataCleaning(dataset).run()
-        return dataset
-
-    def add_history(self, dataset):
-        with redirect_stdout(io.StringIO()):
-            SensorHistory(dataset).run()
-        return dataset
-
-    def test_future_changes_do_not_change_past(self):
-        samples = raw_samples(engine_ids=(1, 2), cycles_per_engine=40)
-        changed = samples.copy()
-        changed.loc[changed[1] > 20, 6] += 1000
-        baseline = self.add_history(self.clean_dataset(samples))
-        modified = self.add_history(self.clean_dataset(changed))
-        past_indices = samples.index[samples[1] <= 20]
-        pd.testing.assert_frame_equal(
-            baseline.samples.loc[past_indices], modified.samples.loc[past_indices]
-        )
-
-    def test_prefix_and_engine_isolation(self):
-        samples = raw_samples(engine_ids=(1, 2), cycles_per_engine=40)
-        full = self.add_history(self.clean_dataset(samples))
-        prefix = samples.loc[(samples[0] == 1) & (samples[1] <= 20)]
-        shortened = self.add_history(self.clean_dataset(prefix))
-        pd.testing.assert_frame_equal(full.samples.loc[prefix.index], shortened.samples)
-        changed = samples.copy()
-        changed.loc[changed[0] == 2, 6] += 1000
-        modified = self.add_history(self.clean_dataset(changed))
-        first_engine = samples.index[samples[0] == 1]
-        pd.testing.assert_frame_equal(
-            full.samples.loc[first_engine], modified.samples.loc[first_engine]
-        )
-
-    def test_known_slope_initial_base_and_row_order(self):
-        samples = raw_samples(engine_ids=(1,), cycles_per_engine=40)
-        samples[6] = 2 * samples[1] + 10
-        shuffled = samples.sample(frac=1, random_state=42)
-        dataset = self.clean_dataset(shuffled)
-        targets_before = dataset.targets.copy()
-        self.add_history(dataset)
-        self.assertEqual(dataset.samples.shape, (40, 89))
-        self.assertTrue(dataset.samples.index.equals(shuffled.index))
-        pd.testing.assert_series_equal(dataset.targets, targets_before)
-        chronological = dataset.samples.sort_values("1")
-        np.testing.assert_allclose(chronological["sensor_6_slope_10"].iloc[1:], 2)
-        self.assertEqual(chronological["sensor_6_slope_10"].iloc[0], 0)
-        self.assertEqual(chronological["sensor_6_std_10"].iloc[0], 0)
-        self.assertEqual(chronological["sensor_6_delta_initial"].iloc[0], 0)
-        self.assertEqual(chronological["sensor_6_delta_initial"].iloc[-1], 54)
 
 
 class MetricsTests(unittest.TestCase):
@@ -181,10 +116,7 @@ class MetricsTests(unittest.TestCase):
 class ModelTests(unittest.TestCase):
     def test_all_models_fit_and_predict_with_grouped_cv(self):
         split = prepared_split()
-        model_classes = [
-            Dummy, LinearRegression, PolynomialRidge, HistoryPolynomialRidge,
-            PolynomialLasso, KNNRegression, PolynomialKNN, DecisionTree, GradientBoosting,
-        ]
+        model_classes = [Dummy, LinearRegression, PolynomialRidge, KNNRegression, DecisionTree]
         for model_class in model_classes:
             with self.subTest(model=model_class.__name__):
                 train = split.train.copy()
@@ -192,9 +124,6 @@ class ModelTests(unittest.TestCase):
                 model = model_class()
                 small_grid(model)
                 with redirect_stdout(io.StringIO()):
-                    if model.requires_history:
-                        SensorHistory(train).run()
-                        SensorHistory(validation).run()
                     model.fit(train.samples, train.targets, groups=train.engine_ids)
                 predictions = model.predict(validation.samples)
                 self.assertEqual(predictions.shape, (12,))
@@ -213,42 +142,20 @@ class ModelTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             PolynomialRidge().fit(split.train.samples, split.train.targets)
 
-    def test_training_facade_adds_history_and_writes_group_reports(self):
+    def test_group_reports_match_predictions(self):
         split = prepared_split()
-        model = HistoryPolynomialRidge()
-        small_grid(model)
+        model = Dummy()
+        model.fit(split.train.samples, split.train.targets)
+        predictions = model.predict(split.validation.samples)
         with TemporaryDirectory() as directory:
-            training = ModelTraining(model, split.train, split.validation, False, directory)
             with redirect_stdout(io.StringIO()):
-                training.run()
-            self.assertEqual(training.train.samples.shape[1], 89)
-            self.assertEqual(split.train.samples.shape[1], 12)
-            self.assertTrue(Path(directory, "validation_metrics.txt").is_file())
-            predictions = pd.read_csv(Path(directory, "validation_predictions.txt"), sep=r"\s+")
-            self.assertEqual(len(predictions), 12)
-            self.assertEqual(set(predictions.engine_id), {81})
-
-    def test_experiment_reports_match_predictions(self):
-        split = prepared_split()
-        model = DecisionTree()
-        small_grid(model)
-        with redirect_stdout(io.StringIO()):
-            model.fit(split.train.samples, split.train.targets, groups=split.train.engine_ids)
-        with TemporaryDirectory() as directory:
-            experiment = HistoryExperiment([], directory)
-            experiment.record_search("baseline", model)
-            experiment.evaluate("baseline", model, "train", split.train)
-            experiment.evaluate("baseline", model, "validation", split.validation)
-            experiment.save_reports()
-            expected = RegressionMetrics(
-                split.validation.targets, model.predict(split.validation.samples)
-            ).rmse()
-            self.assertAlmostEqual(experiment.aggregate_metrics[-1]["RMSE"], expected)
-            self.assertEqual(sum(row["rows"] for row in experiment.rul_range_metrics), 12)
-            self.assertEqual(len(experiment.search_results), 1)
-            self.assertEqual(len(experiment.engine_metrics), 6)
-            for name in ["aggregate_metrics.txt", "engine_metrics.txt", "cv_results.txt", "rul_range_metrics.txt"]:
-                self.assertTrue(Path(directory, name).is_file())
+                GroupedModelEvaluation(split.validation, predictions, "VALIDATION", directory).run()
+            rows = pd.read_csv(Path(directory, "validation_predictions.txt"), sep=r"\s+")
+            metrics = pd.read_csv(Path(directory, "validation_metrics.txt"), sep=r"\s+")
+            self.assertEqual(len(rows), 12)
+            self.assertEqual(set(rows.engine_id), {81})
+            expected = RegressionMetrics(split.validation.targets, predictions).rmse()
+            self.assertAlmostEqual(metrics.RMSE.iloc[0], expected, places=5)
 
 
 if __name__ == "__main__":

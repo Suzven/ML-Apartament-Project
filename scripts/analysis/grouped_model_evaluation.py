@@ -4,10 +4,8 @@ import pandas as pd
 
 if __package__.startswith("scripts."):
     from ..model_evaluation_metrics import RegressionMetrics
-    from ..prediction_report import prediction_rows, write_table
 else:
     from model_evaluation_metrics import RegressionMetrics
-    from prediction_report import prediction_rows, write_table
 
 
 class GroupedModelEvaluation:
@@ -18,7 +16,13 @@ class GroupedModelEvaluation:
         self.report_directory = Path(report_directory)
 
     def run(self):
-        predictions_df = prediction_rows(self.dataset, self.predictions)
+        RegressionMetrics(self.dataset.targets, self.predictions)
+        predictions_df = pd.DataFrame(index=self.dataset.samples.index)
+        predictions_df["engine_id"] = self.dataset.engine_ids
+        predictions_df["cycle"] = self.dataset.cycles
+        predictions_df["target"] = self.dataset.targets
+        predictions_df["prediction"] = self.predictions
+        predictions_df["residual"] = predictions_df["prediction"] - predictions_df["target"]
         summary = []
 
         for engine_id, rows in predictions_df.groupby("engine_id", sort=True):
@@ -43,5 +47,6 @@ class GroupedModelEvaluation:
         print(summary_df.to_string(index=False))
         predictions_path = self.report_directory / f"{self.title.lower()}_predictions.txt"
         metrics_path = self.report_directory / f"{self.title.lower()}_metrics.txt"
-        write_table(predictions_path, predictions_df, include_index=True)
-        write_table(metrics_path, summary_df)
+        self.report_directory.mkdir(parents=True, exist_ok=True)
+        predictions_path.write_text(predictions_df.to_string(index=True) + "\n", encoding="utf-8")
+        metrics_path.write_text(summary_df.to_string(index=False) + "\n", encoding="utf-8")

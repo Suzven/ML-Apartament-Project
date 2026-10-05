@@ -1,5 +1,8 @@
 # On-device predictive maintenance: прогноз Remaining Useful Life двигателя
 
+> **Текущее состояние после отката для самостоятельного исследования:** активна PolynomialRidge; сохранены Dummy, LinearRegression, KNNRegression и DecisionTree. Cleaning удаляет только ID и колонки 4, 5, 14, 22, 23 — в обучение поступает 20 признаков. Модели с историей, polynomial KNN/Lasso, бустинг и скрипты поздних экспериментов удалены. Разделы экспериментов ниже сохранены как исторический конспект; их результаты не описывают текущую конфигурацию кода.
+
+
 Исследовательский ML-проект для прогнозирования оставшегося количества рабочих циклов двигателя — **Remaining Useful Life, RUL**. Данные: `FD001` из набора C-MAPSS. Одна строка соответствует одному двигателю на одном рабочем цикле.
 
 Цель проекта — пройти полный регрессионный эксперимент: исследовать данные, сформировать target для каждой строки, разделить двигатели между train и validation, сравнить модели, разобрать ошибки отдельных траекторий и добавить признаки истории сенсоров.
@@ -742,7 +745,7 @@ random_state = 42
 
 Это лучший текущий кандидат для следующего независимого теста. Преимущество перед бустингом с историей составляет около одного цикла RMSE; статистическая значимость такого различия не оценивалась.
 
-Текущая активная конфигурация лаунчеров остаётся `PolynomialRidge`. Чтобы выбрать победителя, достаточно заменить импорт и `MODEL_CLASS` на `HistoryPolynomialRidge` в [model_config.py](scripts/model_config.py). `ModelTraining` автоматически добавит историю этой модели, а scalers останутся внутри её Pipeline.
+После отката `HistoryPolynomialRidge` удалена из кода. Её результат сохранён здесь как итог прошлого эксперимента, а не как доступная активная модель. Текущие лаунчеры используют `PolynomialRidge` на восстановленном наборе из 20 признаков.
 
 ### Что эксперимент объяснил
 
@@ -834,124 +837,36 @@ baseline + весь пакет
 
 ## Код, запуск и воспроизводимость
 
-### Структура проекта
+### Текущая точка самостоятельного исследования
 
-```text
-scripts/
-    analyze_dataset.py                  Общая статистика и обучение активной модели
-    analyze_dataset_by_engine.py        Статистика по двигателям и групповая оценка
-    analyze_engine_trajectories.py      Анализ сохранённых траекторий 92/96/90/100
-    compare_sensor_history.py           Парный эксперимент Ridge
-    compare_boosting_history.py         Парный эксперимент GradientBoosting
-    history_experiment.py               Общий порядок сравнения и сохранения отчётов
-    model_config.py                     Выбор активной модели в одном месте
-    model_training.py                   Обучение и оценка train/validation
-    model_evaluation_metrics.py         Метрики и evaluation plots
-    prediction_report.py                Сопоставление predictions и запись таблиц
-    entity/
-        dataset_entity.py               Samples, targets, engine IDs, копирование выборок
-    preprocessing/
-        dataset_split.py                Разделение по диапазонам ID
-        data_cleaning.py                Исключение указанных колонок
-        dataset_preprocessing.py        Фасад: split → cleaning
-        sensor_history.py               История каждого сенсора внутри двигателя
-    models/
-        base.py                         Общие fit/predict и вывод GridSearchCV
-        dummy.py
-        linear_regression.py
-        polynomial_ridge.py
-        history_polynomial_ridge.py
-        polynomial_lasso.py
-        knn_regression.py
-        polynomial_knn.py
-        decision_tree.py
-        gradient_boosting.py
-    analysis/
-        statistics.py                   Статистика и сортировка по STD
-        correlation.py                  Pearson matrix и сильные пары
-        summary.py                      Устойчивость корреляций между двигателями
-        scatter.py                      Опциональные scatter plots
-        dataset.py                      Фасад общего анализа
-        segmented.py                    Анализ по двигателям
-        grouped_model_evaluation.py     Метрики и predictions каждой группы
-reports/
-    polynomial_ridge_by_engine/          Сохранённый исторический baseline degree 3
-    engine_trajectory_analysis/          Разбор четырёх траекторий
-    sensor_history_experiment/           Ridge baseline/history
-    boosting_history_experiment/         Boosting baseline/history
-    model_evaluation_by_engine/          Новые запуски, отдельная папка для класса модели
-```
+Сохранены пять моделей: Dummy, LinearRegression, PolynomialRidge, KNNRegression и DecisionTree. Активная модель задаётся в `scripts/model_config.py`; сейчас это PolynomialRidge. Её текущая степень polynomial expansion — 3.
 
-Все девять concrete моделей имеют общий интерфейс `fit(samples, targets, groups, validation)` и `predict(samples)`. Grid-модели требуют groups; Dummy и LinearRegression их принимают для совместимости. Параметр validation не участвует в fitting.
+Preprocessing выполняет split по engine IDs, затем удаляет ID и пять постоянных features. Колонки `20, 9, 3, 10, 2, 19, 12, 17` восстановлены. Итоговый набор содержит 20 исходных features; новых признаков истории нет.
 
-Гиперпараметры инкапсулированы в конкретных моделях. Базовые классы содержат только общий порядок fit/predict и печать результатов, а не скрытые настройки регрессоров.
+Обучение и оценка train/validation явно выполняются в двух лаунчерах. `analyze_dataset_by_engine` дополнительно сохраняет predictions и метрики каждого двигателя. Groups используются при CV, а engine ID не передаётся регрессору как feature.
 
-### Установка
-
-Python и зависимости:
+### Установка и запуск
 
 ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
-```
-
-Текущие отчёты сформированы в окружении со scikit-learn 1.9.1. При другой версии численные результаты могут немного отличаться.
-
-### Основные команды
-
-Из корня репозитория:
-
-```bash
 .venv/bin/python -m scripts.analyze_dataset
 .venv/bin/python -m scripts.analyze_dataset_by_engine
-.venv/bin/python -m scripts.compare_sensor_history
-.venv/bin/python -m scripts.compare_boosting_history
-.venv/bin/python -m scripts.analyze_engine_trajectories
 ```
 
-Прямой запуск `python scripts/analyze_dataset.py` также поддерживается.
+Прямой запуск `python scripts/analyze_dataset.py` также поддерживается. Для выбора другой оставшейся модели меняются импорт и `MODEL_CLASS` в `scripts/model_config.py`. Можно передать экземпляр модели непосредственно в `main(model=...)`.
 
-`analyze_dataset_by_engine` не открывает графики. Новые grouped reports сохраняются в `reports/model_evaluation_by_engine/<имя класса>/`, чтобы запуск другой модели не перезаписывал исторический baseline.
+`analyze_dataset_by_engine` не открывает графики. Новые grouped reports сохраняются в `reports/model_evaluation_by_engine/<имя класса>/`, отдельно от исторических результатов.
 
-`analyze_engine_trajectories` использует сохранённые predictions исторической Ridge из `reports/polynomial_ridge_by_engine/`, а не запускает новое обучение. Сначала проверяется соответствие ID, циклов, targets и residuals исходным данным.
-
-Для запуска без графического интерфейса:
-
-```bash
-MPLBACKEND=Agg .venv/bin/python -m scripts.compare_sensor_history
-```
-
-Полный подбор, особенно бустинг с 89 features, может занимать несколько минут. В сравнении бустинга используются два потока; у моделей по умолчанию `n_jobs=1`.
-
-### Выбор модели через DI
-
-Например, для лучшего сохранённого кандидата в `scripts/model_config.py`:
-
-```python
-if __package__:
-    from .models import HistoryPolynomialRidge
-else:
-    from models import HistoryPolynomialRidge
-
-MODEL_CLASS = HistoryPolynomialRidge
-DRAW_EVALUATION_PLOTS = True
-```
-
-Можно также передать экземпляр модели в `main(model=...)` лаунчера. Ручное создание features истории в лаунчере для `HistoryPolynomialRidge` не требуется: `ModelTraining` видит `requires_history=True` и подготавливает копии train/validation.
-
-При использовании модели напрямую необходимо явно подготовить данные через `SensorHistory`, как это делает `HistoryExperiment`.
-
-### Проверки после рефакторинга
+### Проверки
 
 ```bash
 .venv/bin/python -m unittest discover -s tests -v
 .venv/bin/python -m compileall -q scripts tests
 ```
 
-Проверки покрывают соответствие samples/targets, разделение двигателей, сохранение служебных IDs, причинную доступность истории, общий интерфейс моделей, групповую CV, расчёт метрик и формирование отчётов. Для быстрых smoke checks grid уменьшается только внутри тестов; production-конфигурации моделей не меняются.
+Тесты проверяют split, соответствие samples/targets, восстановленный набор колонок, метрики, оставшиеся модели, групповую CV и запись grouped reports. Grid уменьшается только в тестах; конфигурации моделей не меняются.
 
-### Источники результатов
+### Исторические материалы
 
-Основой исторических разделов служит авторский документ `On-device predictive.pdf`. Структура «Task Description → EDA → Iteration → Model Training → ИТОГ» сохранена, а интерпретации уточнены по текущему коду и отчётам.
-
-Точные результаты поздних экспериментов находятся в `reports/`. Не сохранённые результаты не заменяются предположениями. README объединяет историю исследования, выводы по группам и объяснение созданных features в одном документе.
+Авторский `On-device predictive.pdf`, результаты в `reports/` и аналитические разделы этого README сохранены для конспекта. Скрипты поздних экспериментов удалены по запросу автора. Чтобы повторить те эксперименты, их потребуется реализовать заново; README не предлагает запускать удалённые модули.

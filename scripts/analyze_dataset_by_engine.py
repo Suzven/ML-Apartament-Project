@@ -4,16 +4,18 @@ import pandas as pd
 
 if __package__:
     from . import model_config
-    from .model_training import ModelTraining
+    from .model_evaluation_metrics import ModelEvaluation
     from .entity import DatasetEntity
     from .preprocessing import DatasetPreprocessing
     from .analysis import SegmentedDatasetAnalysis
+    from .analysis.grouped_model_evaluation import GroupedModelEvaluation
 else:
     import model_config
-    from model_training import ModelTraining
+    from model_evaluation_metrics import ModelEvaluation
     from entity import DatasetEntity
     from preprocessing import DatasetPreprocessing
     from analysis import SegmentedDatasetAnalysis
+    from analysis.grouped_model_evaluation import GroupedModelEvaluation
 
 DATASET_PATH = Path(__file__).with_name("train_FD001.txt")
 ENGINE_ID_COLUMN = 0
@@ -46,13 +48,19 @@ def main(model=None):
 
     if model is None:
         model = model_config.MODEL_CLASS()
-    ModelTraining(
-        model=model,
-        train=split.train,
-        validation=split.validation,
-        draw_plots=False,
-        report_directory=REPORT_ROOT / type(model).__name__,
-    ).run()
+    model.fit(split.train.samples, split.train.targets, groups=split.train.engine_ids)
+    model_name = type(model).__name__
+    for name, subset in [("TRAIN", split.train), ("VALIDATION", split.validation)]:
+        predictions = model.predict(subset.samples)
+        ModelEvaluation(
+            targets=subset.targets,
+            predictions=predictions,
+            draw_plots=False,
+            title=f"{model_name} | {name}",
+        ).run()
+        GroupedModelEvaluation(
+            subset, predictions, name, REPORT_ROOT / model_name
+        ).run()
 
 
 if __name__ == "__main__":
