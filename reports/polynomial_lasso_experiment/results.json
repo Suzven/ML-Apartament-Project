@@ -1,0 +1,65 @@
+{
+  "model": "Lasso",
+  "input_features": 394,
+  "expanded_features": 604,
+  "best_parameters": {
+    "lasso__alpha": 1
+  },
+  "cv_rmse": 31.924142108559714,
+  "cv_results": [
+    {
+      "parameters": {
+        "lasso__alpha": 0.1
+      },
+      "rmse": 36.317869818622896
+    },
+    {
+      "parameters": {
+        "lasso__alpha": 0.3
+      },
+      "rmse": 33.84883873286971
+    },
+    {
+      "parameters": {
+        "lasso__alpha": 1
+      },
+      "rmse": 31.924142108559714
+    },
+    {
+      "parameters": {
+        "lasso__alpha": 3
+      },
+      "rmse": 32.24945826110957
+    },
+    {
+      "parameters": {
+        "lasso__alpha": 10
+      },
+      "rmse": 36.89516773631899
+    },
+    {
+      "parameters": {
+        "lasso__alpha": 30
+      },
+      "rmse": 49.26530837465155
+    }
+  ],
+  "train": {
+    "rss": 14094133.420048412,
+    "rmse": 29.552507322727866,
+    "mae": 20.712638935741555,
+    "rmse_to_std": 0.4483545582033611,
+    "rmse_to_range": 0.08186290117099132
+  },
+  "validation": {
+    "rss": 9595189.763260204,
+    "rmse": 46.212405424821306,
+    "mae": 33.20320599956749,
+    "rmse_to_std": 0.5963446506228449,
+    "rmse_to_range": 0.13591883948476854
+  },
+  "nonzero_coefficients": 71,
+  "lasso_iterations": 80,
+  "dual_gap": 3.3128100407564562,
+  "seconds": 70.8684496249989
+}

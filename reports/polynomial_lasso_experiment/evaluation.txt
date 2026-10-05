@@ -1,0 +1,16 @@
+Best parameters: {'lasso__alpha': 1}
+Best grouped CV RMSE: 31.924142108559714
+
+MODEL EVALUATION | PolynomialLasso | TRAIN
+RSS: 14094133.420048
+RMSE: 29.552507
+MAE: 20.712639
+RMSE / STD(target): 0.448355
+RMSE / MinMax(target): 0.081863 (8.19%)
+
+MODEL EVALUATION | PolynomialLasso | VALIDATION
+RSS: 9595189.763260
+RMSE: 46.212405
+MAE: 33.203206
+RMSE / STD(target): 0.596345
+RMSE / MinMax(target): 0.135919 (13.59%)

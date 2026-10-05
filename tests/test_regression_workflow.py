@@ -17,6 +17,7 @@ from scripts.models import (
     KNNRegression,
     LinearRegression,
     PolynomialRidge,
+    Ridge,
 )
 from scripts.preprocessing import DatasetPreprocessing
 
@@ -36,7 +37,7 @@ def raw_samples(engine_ids=(1, 2, 3, 4, 5, 81), cycles_per_engine=12):
 def prepared_split():
     with redirect_stdout(io.StringIO()):
         dataset = DatasetEntity(raw_samples())
-        preprocessing = DatasetPreprocessing(dataset)
+        preprocessing = DatasetPreprocessing(dataset, engineer_features=False)
         preprocessing.run()
     return preprocessing
 
@@ -47,7 +48,7 @@ def small_grid(model):
             "regression__n_neighbors": [3],
             "regression__weights": ["uniform"],
         }
-    elif isinstance(model, PolynomialRidge):
+    elif isinstance(model, (PolynomialRidge, Ridge)):
         parameters = {"ridge__alpha": [100]}
     elif isinstance(model, DecisionTree):
         parameters = {"max_depth": [3]}
@@ -116,7 +117,7 @@ class MetricsTests(unittest.TestCase):
 class ModelTests(unittest.TestCase):
     def test_all_models_fit_and_predict_with_grouped_cv(self):
         split = prepared_split()
-        model_classes = [Dummy, LinearRegression, PolynomialRidge, KNNRegression, DecisionTree]
+        model_classes = [Dummy, LinearRegression, PolynomialRidge, Ridge, KNNRegression, DecisionTree]
         for model_class in model_classes:
             with self.subTest(model=model_class.__name__):
                 train = split.train.copy()
@@ -147,15 +148,33 @@ class ModelTests(unittest.TestCase):
         model = Dummy()
         model.fit(split.train.samples, split.train.targets)
         predictions = model.predict(split.validation.samples)
+        mean_features = [13, 18, 8, 7, 21, 11, 16, 6, 15, 24]
         with TemporaryDirectory() as directory:
             with redirect_stdout(io.StringIO()):
-                GroupedModelEvaluation(split.validation, predictions, "VALIDATION", directory).run()
+                GroupedModelEvaluation(
+                    split.validation, predictions, "VALIDATION", directory, mean_features
+                ).run()
             rows = pd.read_csv(Path(directory, "validation_predictions.txt"), sep=r"\s+")
-            metrics = pd.read_csv(Path(directory, "validation_metrics.txt"), sep=r"\s+")
+            columns = ["Group", "N", "MAE", "RMSE", "Mean Residual"]
+            for feature in mean_features:
+                columns.append(f"Mean Feature {feature}")
+            metrics = pd.read_csv(
+                Path(directory, "validation_metrics.txt"), sep=r"\s+", skiprows=1, names=columns
+            )
             self.assertEqual(len(rows), 12)
             self.assertEqual(set(rows.engine_id), {81})
             expected = RegressionMetrics(split.validation.targets, predictions).rmse()
             self.assertAlmostEqual(metrics.RMSE.iloc[0], expected, places=5)
+            self.assertEqual(metrics["Group"].iloc[0], 81)
+            self.assertEqual(metrics["N"].iloc[0], 12)
+            self.assertAlmostEqual(
+                metrics["Mean Residual"].iloc[0], (predictions - split.validation.targets).mean(), places=5
+            )
+            for feature in mean_features:
+                self.assertAlmostEqual(
+                    metrics[f"Mean Feature {feature}"].iloc[0],
+                    split.validation.samples[feature].mean(), places=5,
+                )
 
 
 if __name__ == "__main__":

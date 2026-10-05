@@ -1,0 +1,16 @@
+Best parameters: {'boosting__l2_regularization': 0, 'boosting__learning_rate': 0.05, 'boosting__max_leaf_nodes': 31}
+Best grouped CV RMSE: 34.06550643401111
+
+MODEL EVALUATION | GradientBoosting | TRAIN
+RSS: 251170.239537
+RMSE: 3.945111
+MAE: 2.901507
+RMSE / STD(target): 0.059853
+RMSE / MinMax(target): 0.010928 (1.09%)
+
+MODEL EVALUATION | GradientBoosting | VALIDATION
+RSS: 10301384.621237
+RMSE: 47.882806
+MAE: 32.035037
+RMSE / STD(target): 0.617900
+RMSE / MinMax(target): 0.140832 (14.08%)

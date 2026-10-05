@@ -1,9 +1,12 @@
 class RegressionModel:
+    def model_samples(self, samples):
+        return samples.rename(columns=str)
+
     def fit(self, samples, targets, groups=None, validation=None):
-        self.model.fit(samples, targets)
+        self.model.fit(self.model_samples(samples), targets)
 
     def predict(self, samples):
-        return self.model.predict(samples)
+        return self.model.predict(self.model_samples(samples))
 
 
 class GridSearchRegression(RegressionModel):
@@ -11,7 +14,7 @@ class GridSearchRegression(RegressionModel):
         if groups is None:
             raise ValueError("Engine IDs are required for grouped cross-validation")
 
-        self.model.fit(samples, targets, groups=groups)
+        self.model.fit(self.model_samples(samples), targets, groups=groups)
         self.print_search_results()
 
     def print_search_results(self):

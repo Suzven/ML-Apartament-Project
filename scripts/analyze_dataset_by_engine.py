@@ -21,8 +21,10 @@ DATASET_PATH = Path(__file__).with_name("train_FD001.txt")
 ENGINE_ID_COLUMN = 0
 CORRELATION_THRESHOLD = 0.8
 DRAW_SCATTER = False
+ANALYZE_ENGINEERED_FEATURES = False
 TOP_N_SCATTER = 5
 ENGINES_TO_PLOT = [1]
+MEAN_FEATURES = [13, 18, 8, 7, 21, 11, 16, 6, 15, 24]
 REPORT_ROOT = Path(__file__).resolve().parent.parent / "reports" / "model_evaluation_by_engine"
 
 
@@ -36,8 +38,12 @@ def main(model=None):
         print(f"\n{name}")
         print("\nDataset shape:")
         print(subset.samples.shape)
+        analysis_samples = subset.samples
+        if not ANALYZE_ENGINEERED_FEATURES:
+            original_columns = [column for column in subset.samples.columns if isinstance(column, int)]
+            analysis_samples = subset.samples[original_columns]
         SegmentedDatasetAnalysis(
-            subset.samples,
+            analysis_samples,
             engine_id_column=ENGINE_ID_COLUMN,
             engine_ids=subset.engine_ids,
             threshold=CORRELATION_THRESHOLD,
@@ -59,7 +65,8 @@ def main(model=None):
             title=f"{model_name} | {name}",
         ).run()
         GroupedModelEvaluation(
-            subset, predictions, name, REPORT_ROOT / model_name
+            subset, predictions, name, REPORT_ROOT / model_name,
+            mean_features=MEAN_FEATURES,
         ).run()
 
 

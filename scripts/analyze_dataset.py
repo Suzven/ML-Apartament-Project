@@ -19,6 +19,7 @@ DATASET_PATH = Path(__file__).with_name("train_FD001.txt")
 CORRELATION_THRESHOLD = 0.8
 DRAW_SCATTER = False
 TOP_N_SCATTER = 10
+ANALYZE_ENGINEERED_FEATURES = False
 
 
 def main(model=None):
@@ -31,8 +32,12 @@ def main(model=None):
         print(f"\n{name}")
         print("\nDataset shape:")
         print(subset.samples.shape)
+        analysis_samples = subset.samples
+        if not ANALYZE_ENGINEERED_FEATURES:
+            original_columns = [column for column in subset.samples.columns if isinstance(column, int)]
+            analysis_samples = subset.samples[original_columns]
         DatasetAnalysis(
-            subset.samples,
+            analysis_samples,
             threshold=CORRELATION_THRESHOLD,
             draw_scatter=DRAW_SCATTER,
             top_n=TOP_N_SCATTER,

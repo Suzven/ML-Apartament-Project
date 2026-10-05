@@ -1,19 +1,16 @@
-from sklearn.linear_model import Ridge
+from sklearn.linear_model import Ridge as SklearnRidge
 from sklearn.model_selection import GridSearchCV, GroupKFold
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 from .base import GridSearchRegression
-from .polynomial_features import polynomial_and_history
 
 
-class PolynomialRidge(GridSearchRegression):
+class Ridge(GridSearchRegression):
     def __init__(self):
         pipeline = Pipeline([
-            ("input_scaling", StandardScaler().set_output(transform="pandas")),
-            ("polynomial", polynomial_and_history()),
-            ("feature_scaling", StandardScaler()),
-            ("ridge", Ridge()),
+            ("scaling", StandardScaler()),
+            ("ridge", SklearnRidge()),
         ])
         self.model = GridSearchCV(
             estimator=pipeline,
