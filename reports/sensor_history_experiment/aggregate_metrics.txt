@@ -1,5 +1,0 @@
-experiment      split  alpha   CV_RMSE      RMSE       MAE
-  baseline      train    100 33.246889 32.282823 22.458544
-  baseline validation    100 33.246889 47.946897 35.065743
-   history      train   1000 31.409748 29.703406 20.523983
-   history validation   1000 31.409748 44.707050 31.638485

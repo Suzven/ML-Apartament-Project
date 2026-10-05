@@ -1,5 +1,0 @@
-experiment      split                                         best_parameters   CV_RMSE      RMSE       MAE
-  baseline      train {"learning_rate":0.05,"max_depth":3,"n_estimators":100} 33.354704 31.802509 22.051906
-  baseline validation {"learning_rate":0.05,"max_depth":3,"n_estimators":100} 33.354704 48.350547 34.999416
-   history      train {"learning_rate":0.05,"max_depth":2,"n_estimators":100} 32.395441 28.898046 19.717711
-   history validation {"learning_rate":0.05,"max_depth":2,"n_estimators":100} 32.395441 45.738542 32.276301
