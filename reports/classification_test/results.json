@@ -1,0 +1,170 @@
+{
+  "classes": [
+    "high",
+    "medium",
+    "low",
+    "near_failure"
+  ],
+  "features": 394,
+  "training_engines": 100,
+  "training_samples": 20631,
+  "train_full": {
+    "samples": 20631,
+    "engines": 100,
+    "accuracy": 0.9761039212835054,
+    "precision_macro": 0.9760656968008475,
+    "log_loss": 0.06994898286287622,
+    "groups": [
+      {
+        "Group": "high",
+        "Samples": 5096,
+        "Engines": 100,
+        "Predicted samples": 5095,
+        "Correct": 4953,
+        "Accuracy within group": 0.9719387755102041,
+        "Precision": 0.9721295387634936,
+        "Recall": 0.9719387755102041,
+        "Log Loss": 0.07545186844930131
+      },
+      {
+        "Group": "medium",
+        "Samples": 5145,
+        "Engines": 100,
+        "Predicted samples": 5182,
+        "Correct": 4931,
+        "Accuracy within group": 0.9584062196307094,
+        "Precision": 0.9515631030490158,
+        "Recall": 0.9584062196307094,
+        "Log Loss": 0.12594406822051876
+      },
+      {
+        "Group": "low",
+        "Samples": 5172,
+        "Engines": 100,
+        "Predicted samples": 5134,
+        "Correct": 5049,
+        "Accuracy within group": 0.9762180974477959,
+        "Precision": 0.9834437086092715,
+        "Recall": 0.9762180974477959,
+        "Log Loss": 0.06740063812143349
+      },
+      {
+        "Group": "near_failure",
+        "Samples": 5218,
+        "Engines": 100,
+        "Predicted samples": 5220,
+        "Correct": 5205,
+        "Accuracy within group": 0.9975086239938674,
+        "Precision": 0.9971264367816092,
+        "Recall": 0.9975086239938674,
+        "Log Loss": 0.011888925348358875
+      }
+    ]
+  },
+  "test_all_cycles": {
+    "samples": 13096,
+    "engines": 100,
+    "accuracy": 0.8436163714111179,
+    "precision_macro": 0.8590332441130453,
+    "log_loss": 0.5445833342802971,
+    "groups": [
+      {
+        "Group": "high",
+        "Samples": 5087,
+        "Engines": 100,
+        "Predicted samples": 4986,
+        "Correct": 4408,
+        "Accuracy within group": 0.8665225083546294,
+        "Precision": 0.8840754111512235,
+        "Recall": 0.8665225083546294,
+        "Log Loss": 0.5196440962575795
+      },
+      {
+        "Group": "medium",
+        "Samples": 4469,
+        "Engines": 96,
+        "Predicted samples": 4652,
+        "Correct": 3612,
+        "Accuracy within group": 0.8082345043633923,
+        "Precision": 0.7764402407566638,
+        "Recall": 0.8082345043633923,
+        "Log Loss": 0.6018991178921056
+      },
+      {
+        "Group": "low",
+        "Samples": 2696,
+        "Engines": 69,
+        "Predicted samples": 2593,
+        "Correct": 2239,
+        "Accuracy within group": 0.8304896142433235,
+        "Precision": 0.8634785962205939,
+        "Recall": 0.8304896142433235,
+        "Log Loss": 0.5500055526994558
+      },
+      {
+        "Group": "near_failure",
+        "Samples": 844,
+        "Engines": 32,
+        "Predicted samples": 865,
+        "Correct": 789,
+        "Accuracy within group": 0.9348341232227488,
+        "Precision": 0.9121387283236995,
+        "Recall": 0.9348341232227488,
+        "Log Loss": 0.3740896921029755
+      }
+    ]
+  },
+  "test_last_cycle": {
+    "samples": 100,
+    "engines": 100,
+    "accuracy": 0.86,
+    "precision_macro": 0.8011904761904761,
+    "log_loss": 0.49648508871743957,
+    "groups": [
+      {
+        "Group": "high",
+        "Samples": 4,
+        "Engines": 4,
+        "Predicted samples": 7,
+        "Correct": 4,
+        "Accuracy within group": 1.0,
+        "Precision": 0.5714285714285714,
+        "Recall": 1.0,
+        "Log Loss": 0.059583466053298006
+      },
+      {
+        "Group": "medium",
+        "Samples": 27,
+        "Engines": 27,
+        "Predicted samples": 28,
+        "Correct": 22,
+        "Accuracy within group": 0.8148148148148148,
+        "Precision": 0.7857142857142857,
+        "Recall": 0.8148148148148148,
+        "Log Loss": 0.75711954904242
+      },
+      {
+        "Group": "low",
+        "Samples": 37,
+        "Engines": 37,
+        "Predicted samples": 30,
+        "Correct": 28,
+        "Accuracy within group": 0.7567567567567568,
+        "Precision": 0.9333333333333333,
+        "Recall": 0.7567567567567568,
+        "Log Loss": 0.7727396856448283
+      },
+      {
+        "Group": "near_failure",
+        "Samples": 32,
+        "Engines": 32,
+        "Predicted samples": 35,
+        "Correct": 32,
+        "Accuracy within group": 1.0,
+        "Precision": 0.9142857142857143,
+        "Recall": 1.0,
+        "Log Loss": 0.011768087953961871
+      }
+    ]
+  }
+}

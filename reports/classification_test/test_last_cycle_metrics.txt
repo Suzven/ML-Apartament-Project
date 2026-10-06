@@ -1,0 +1,5 @@
+       Group  Samples  Engines  Predicted samples  Correct  Accuracy within group  Precision   Recall  Log Loss
+        high        4        4                  7        4               1.000000   0.571429 1.000000  0.059583
+      medium       27       27                 28       22               0.814815   0.785714 0.814815  0.757120
+         low       37       37                 30       28               0.756757   0.933333 0.756757  0.772740
+near_failure       32       32                 35       32               1.000000   0.914286 1.000000  0.011768

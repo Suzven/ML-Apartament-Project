@@ -6,6 +6,7 @@ from .polynomial_ridge import PolynomialRidge
 from .ridge import Ridge
 from .gradient_boosting import GradientBoosting
 from .polynomial_lasso import PolynomialLasso
+from .logistic_regression import LogisticRegression
 
 __all__ = [
     "Dummy",
@@ -14,6 +15,7 @@ __all__ = [
     "Ridge",
     "GradientBoosting",
     "PolynomialLasso",
+    "LogisticRegression",
     "KNNRegression",
     "DecisionTree",
 ]

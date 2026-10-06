@@ -1,0 +1,7 @@
+Predicted group  high  medium   low  near_failure  critical
+True group                                                 
+high              888     217     3             3         0
+medium             73     906   141             0         0
+low                 0      85  1024            17         0
+near_failure        0       0    72           796        34
+critical            0       0     0            28       206
