@@ -872,18 +872,6 @@ Confusion Matrix:
 
 100% Recall здесь относится только к этим 32 test engines, а не означает гарантированное обнаружение всех будущих отказов. Samples одного engine связаны между собой, поэтому метрики по всем cycles не равны тысячам независимых проверок. Когда предупреждение впервые появляется и насколько стабильно держится по всей траектории, отдельно не проверял.
 
-### Запуск и результаты
-
-```bash
-.venv/bin/python -m scripts.dataset_analyze_classification
-.venv/bin/python -m scripts.dataset_analyze_classification_by_group
-.venv/bin/python -m scripts.dataset_analyze_classification_test
-```
-
-Первые два скрипта используют split train/validation и текущие четыре класса. Таблицы с пятью классами выше фиксируют предыдущий эксперимент; итоговый test-скрипт обучается на полном train.
-
-[Полные итоговые метрики](reports/classification_test/results.json), [confusion matrix последних test-наблюдений](reports/classification_test/test_last_cycle_confusion.txt) и обученная модель `reports/classification_test/logistic_regression.joblib` сохранены. Все 28 тестов кода проходят; они проверяют расчёты и pipeline, а не доказывают качество на любых будущих данных.
-
 ## Идея на потом: две модели
 
 Финальная идея - оставить классификацию как первый этап и добавить вторую модель для точного RUL ближе к отказу:
