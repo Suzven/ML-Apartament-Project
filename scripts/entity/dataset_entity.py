@@ -4,7 +4,7 @@ import pandas as pd
 
 
 class DatasetEntity:
-    def __init__(self, df: pd.DataFrame, engine_id_column=0, cycle_column=1):
+    def __init__(self, df: pd.DataFrame, engine_id_column=0, cycle_column=1, verbose=True):
         if df[[engine_id_column, cycle_column]].isna().any().any():
             raise ValueError("Engine IDs and cycles must not contain missing values")
         if not pd.api.types.is_numeric_dtype(df[cycle_column]):
@@ -17,7 +17,8 @@ class DatasetEntity:
         cycle_max = self.samples.groupby(engine_id_column)[cycle_column].transform("max")
         cycle_current = self.samples[cycle_column]
         self.targets = (cycle_max - cycle_current).rename("RUL")
-        self.print_head()
+        if verbose:
+            self.print_head()
 
     @property
     def cycles(self):

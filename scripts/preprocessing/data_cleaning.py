@@ -2,12 +2,14 @@ class DataCleaning:
     def __init__(self, dataset):
         self.dataset = dataset
 
-    def run(self):
+    def run(self, verbose=True):
         constant_features = [4, 5, 14, 22, 23]
         columns_to_drop = [self.dataset.engine_id_column]
         columns_to_drop.extend(constant_features)
         columns_to_drop.sort()
         self.dataset.samples = self.dataset.samples.drop(columns=columns_to_drop)
-        print("\nRemoved features:", columns_to_drop)
-        print("Samples shape after cleaning:", self.dataset.samples.shape)
-        self.dataset.print_head()
+        if verbose:
+            print("\nRemoved features:", columns_to_drop)
+            print("Samples shape after cleaning:", self.dataset.samples.shape)
+            self.dataset.print_head()
+        return columns_to_drop

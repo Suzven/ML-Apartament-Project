@@ -82,8 +82,8 @@ def load_datasets():
     if not np.isfinite(remaining).all() or (remaining < 0).any():
         raise ValueError("Test RUL must be finite and nonnegative")
 
-    full_train = DatasetEntity(train_samples)
-    test = DatasetEntity(test_samples)
+    full_train = DatasetEntity(train_samples, verbose=False)
+    test = DatasetEntity(test_samples, verbose=False)
     # Test обрывается ДО отказа: к расстоянию до последнего cycle добавляем RUL из файла.
     test.targets = (test.targets + test.engine_ids.map(remaining)).rename("RUL")
     return full_train, test
@@ -103,7 +103,9 @@ def prepare_datasets(full_train, test):
     for name, dataset in datasets.items():
         print(f"\n{name} | engines: {dataset.engine_ids.nunique()} | samples: {len(dataset.samples)}")
         # Только исходные колонки: удаляем engine_id и прежние constant features.
-        DataCleaning(dataset).run()
+        removed_features = DataCleaning(dataset).run(verbose=False)
+        print("Removed features (engine_id + constants):", removed_features)
+        print(dataset.samples.head())
 
     # Без генерации признаков: fit scaler только на Train.
     preprocessing = StandardScaler()
@@ -207,14 +209,14 @@ def print_evaluation(name, report, report_directory=REPORT_DIRECTORY):
     )
     by_engine["rmse"] = np.sqrt(by_engine["mse"])
     by_engine = by_engine[["samples", "rmse", "mean_residual"]].sort_values("rmse", ascending=False)
-    print("\nTop 15 engines by RMSE (descending):")
-    print(by_engine.head(15).to_string(float_format="%.6f"))
+    print("\nTop 25 engines by RMSE (descending):")
+    print(by_engine.head(25).to_string(float_format="%.6f"))
 
     # Группируем целые двигатели по полной длине жизни, а не отдельные cycles/RUL.
     lifetime = report["engine_lifetime"]
-    groups = [("<=100 cycles", lifetime <= 100),
-              ("101-200 cycles", (lifetime > 100) & (lifetime <= 200)),
-              (">200 cycles", lifetime > 200)]
+    groups = [("100-200 cycles [100, 200)", (lifetime >= 100) & (lifetime < 200)),
+              ("200-300 cycles [200, 300)", (lifetime >= 200) & (lifetime < 300)),
+              ("300+ cycles", lifetime >= 300)]
     group_rows = []
     print("\nGroups by engine lifetime | residual = prediction - target")
     for label, mask in groups:
@@ -255,7 +257,6 @@ def main():
     train_loader = create_loader(prepared["TRAIN"], datasets["TRAIN"].targets, shuffle=True)
     validation_loader = create_loader(prepared["VALIDATION"], datasets["VALIDATION"].targets)
     model = RegressionModel(input_features=prepared["TRAIN"].shape[1])
-    print("\nModel (CPU):\n", model)
     history, best_epoch = train_model(model, train_loader, validation_loader)
 
     REPORT_DIRECTORY.mkdir(parents=True, exist_ok=True)
@@ -272,8 +273,6 @@ def main():
     print_evaluation("TEST", test_report)
     last_cycle = test_report.groupby("engine_id")["cycle"].transform("max")
     last_report = test_report.loc[test_report["cycle"] == last_cycle]
-    rmse, residual = metrics(last_report)
-    print(f"\nTEST LAST CYCLE | RMSE: {rmse:.6f} | Mean Residual: {residual:.6f}")
     last_report.to_csv(REPORT_DIRECTORY / "test_last_cycle_predictions.csv", index=False)
 
     torch.save(model.state_dict(), REPORT_DIRECTORY / "model.pth")

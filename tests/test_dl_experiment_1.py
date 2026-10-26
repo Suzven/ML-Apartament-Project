@@ -81,9 +81,9 @@ class DeepLearningTests(unittest.TestCase):
     def test_lifetime_boundaries_and_group_rmse(self):
         report = pd.DataFrame({
             "engine_id": [1, 1, 2, 3], "cycle": [1, 100, 1, 1],
-            "target": [99, 0, 199, 200], "prediction": [102, 4, 197, 206],
+            "target": [99, 0, 199, 299], "prediction": [102, 4, 197, 305],
             "residual": [3, 4, -2, 6], "squared_error": [9, 16, 4, 36],
-            "engine_lifetime": [100, 100, 200, 201],
+            "engine_lifetime": [100, 100, 200, 300],
         })
         with TemporaryDirectory() as directory, redirect_stdout(io.StringIO()):
             experiment.print_evaluation("VALIDATION", report, Path(directory))
