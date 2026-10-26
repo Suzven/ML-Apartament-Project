@@ -5,8 +5,11 @@ import pandas as pd
 
 
 class DLFeatureEngineering:
-    def __init__(self, dataset):
+    def __init__(self, dataset, fill_missing=True):
         self.dataset = dataset
+        # Старые эксперименты сохраняют прежнее заполнение; новый режим
+        # передаёт NaN в scaler и заполняет пропуски только ПОСЛЕ scaling.
+        self.fill_missing = fill_missing
         self.windows = (10, 20, 30)
         self.trend_window = 30
 
@@ -47,8 +50,10 @@ class DLFeatureEngineering:
             # Нужны два ПОЛНЫХ соседних окна, то есть 60 предыдущих циклов.
             features[f"{prefix}_acceleration_30"] = slope - slope.shift(30)
 
-        # Только отсутствие полной истории заменяем нулём.
-        return pd.DataFrame(features, index=samples.index).fillna(0.0)
+        engineered = pd.DataFrame(features, index=samples.index)
+        if self.fill_missing:
+            return engineered.fillna(0.0)
+        return engineered
 
     def run(self):
         samples = self.dataset.samples

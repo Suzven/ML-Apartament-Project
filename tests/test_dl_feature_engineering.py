@@ -9,14 +9,27 @@ from scripts.preprocessing.dl_feature_engineering import DLFeatureEngineering
 from tests.test_regression_workflow import raw_samples
 
 
-def prepare(samples):
+def prepare(samples, fill_missing=True):
     dataset = DatasetEntity(samples, verbose=False)
     DataCleaning(dataset).run(verbose=False)
-    DLFeatureEngineering(dataset).run()
+    DLFeatureEngineering(dataset, fill_missing=fill_missing).run()
     return dataset
 
 
 class DLFeatureEngineeringTests(unittest.TestCase):
+    def test_nan_history_preserves_missing_windows_and_real_zeros(self):
+        samples = raw_samples(engine_ids=(1,), cycles_per_engine=70)
+        samples[6] = 7.0
+        result = prepare(samples, fill_missing=False).samples
+        for feature, required in [("mean_10", 10), ("std_20", 20), ("slope_30", 30),
+                                  ("delta_30", 31), ("acceleration_30", 60)]:
+            values = result[f"feature_6_{feature}"]
+            self.assertTrue(values.iloc[:required].isna().all())
+            self.assertTrue(np.isfinite(values.iloc[required:]).all())
+        self.assertTrue((result["feature_6_std_20"].iloc[20:] == 0).all())
+        prefix = prepare(samples.iloc[:45], fill_missing=False)
+        pd.testing.assert_frame_equal(result.iloc[:45], prefix.samples)
+
     def test_rolling_windows_exclude_current_cycle_and_require_full_history(self):
         samples = raw_samples(engine_ids=(1,), cycles_per_engine=75)
         samples[6] = samples[1] * 2.0 + 5

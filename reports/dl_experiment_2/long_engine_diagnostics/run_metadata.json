@@ -1,0 +1,11 @@
+{
+  "model_sha256": "ac9dc0ccc27d14ac7ba46ffc54610728322af72706dfbdd0924e653dd061f8b0",
+  "model_architecture": "RegressionModel(\n  (hidden): Linear(in_features=200, out_features=86, bias=True)\n  (relu): ReLU()\n  (hidden_2): Linear(in_features=86, out_features=64, bias=True)\n  (relu_2): ReLU()\n  (hidden_3): Linear(in_features=64, out_features=32, bias=True)\n  (relu_3): ReLU()\n  (output): Linear(in_features=32, out_features=1, bias=True)\n)",
+  "checkpoint_predictions_verified": true,
+  "data_used": [
+    "Train engines 1-80",
+    "Validation engines 81-100"
+  ],
+  "test_used": false,
+  "candidate_associations": "Exploratory, Train only, 80 engines at cycle 100"
+}

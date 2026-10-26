@@ -1,0 +1,65 @@
+Verified saved model reproduces Train/Validation predictions; Test was not loaded.
+
+Focus engines:
+  engine_id      split  lifetime   rmse  mean_residual  first100_rmse  first100_rss_percent  after200_rmse  after200_mean_residual
+        69      TRAIN       362 73.358        -47.209        123.855                78.745         14.572                   5.722
+        67      TRAIN       313 51.437        -30.921         84.802                86.840         12.440                   9.231
+        92 VALIDATION       341 68.148        -41.037        110.152                76.616         19.360                   9.122
+        96 VALIDATION       336 69.226        -44.489        115.825                83.315         11.676                   3.488
+
+Rolling mean 30 scaling:
+  feature  window  scaler_std  complete_window_std  scale_ratio  missing_history_rows
+       6      30     228.658                0.336      680.652                  2400
+       7      30     565.759                3.855      146.751                  2400
+       8      30     501.059                6.703       74.747                  2400
+      11      30     196.923                0.667      295.403                  2400
+      12      30     849.706                0.057    14979.988                  2400
+      13      30    3225.034               17.266      186.790                  2400
+      15      30      16.908                0.207       81.682                  2400
+      16      30     185.548                0.570      325.692                  2400
+      17      30     849.705                0.057    14779.508                  2400
+      18      30    2897.304               15.251      189.976                  2400
+      19      30       3.003                0.026      113.775                  2400
+      21      30     139.866                1.012      138.149                  2400
+      24      30      13.817                0.126      109.937                  2400
+      25      30       8.290                0.075      109.829                  2400
+
+Train-only candidate associations at cycle 100:
+                    spearman_lifetime  train_engines
+delta_baseline_16              0.628             80
+slope90_16                     0.618             80
+slope90_24                     0.613             80
+delta_baseline_25              0.603             80
+slope90_11                     0.603             80
+delta_baseline_15             -0.555             80
+mean_deviation_16              0.546             80
+delta_baseline_24              0.537             80
+slope90_12                    -0.519             80
+slope90_19                    -0.512             80
+delta_baseline_8              -0.510             80
+delta_baseline_11              0.510             80
+
+Nearest Train trajectories at cycle 100:
+  focus_engine  train_neighbor  standardized_rms_distance  neighbor_lifetime  focus_lifetime
+           69              67                      0.583              313.0           362.0
+           69               4                      0.590              189.0           362.0
+           69              53                      0.638              195.0           362.0
+           69              64                      0.669              283.0           362.0
+           69              74                      0.686              166.0           362.0
+           67              74                      0.478              166.0           313.0
+           67               4                      0.512              189.0           313.0
+           67              53                      0.522              195.0           313.0
+           67              35                      0.530              181.0           313.0
+           67              69                      0.583              362.0           313.0
+           92              43                      0.488              207.0           341.0
+           92              65                      0.613              153.0           341.0
+           92               4                      0.678              189.0           341.0
+           92               1                      0.687              192.0           341.0
+           92              42                      0.695              196.0           341.0
+           96              69                      0.560              362.0           336.0
+           96               4                      0.583              189.0           336.0
+           96              43                      0.625              207.0           336.0
+           96               1                      0.628              192.0           336.0
+           96              65                      0.660              153.0           336.0
+
+Diagnostics: /Users/aleksejkovalenko/Documents/ML/ApartamentRegression/reports/dl_experiment_2/long_engine_diagnostics

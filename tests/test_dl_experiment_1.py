@@ -14,11 +14,59 @@ TORCH_AVAILABLE = importlib.util.find_spec("torch") is not None
 if TORCH_AVAILABLE:
     import torch
     from scripts import dl_experiment_1 as experiment
+    from scripts import dl_experiment_2 as experiment_2
     from scripts.entity import DatasetEntity
 
 
 @unittest.skipUnless(TORCH_AVAILABLE, "Install torch to run DL tests")
 class DeepLearningTests(unittest.TestCase):
+    def test_experiment_2_scales_observed_train_values_before_filling_nan(self):
+        import joblib
+
+        full_train = DatasetEntity(raw_samples(engine_ids=range(1, 6), cycles_per_engine=65), verbose=False)
+        test_samples = raw_samples(engine_ids=(1,), cycles_per_engine=65)
+        test_samples[6] += 100000
+        test = DatasetEntity(test_samples, verbose=False)
+        with redirect_stdout(io.StringIO()):
+            datasets, prepared, preprocessing = experiment_2.prepare_datasets(full_train, test)
+        scaler = preprocessing.named_steps["scaling"]
+        feature = "feature_6_mean_30"
+        index = list(scaler.feature_names_in_).index(feature)
+        observed = datasets["TRAIN"].samples[feature].dropna()
+        self.assertEqual(scaler.n_samples_seen_[index], 4 * (65 - 30))
+        self.assertAlmostEqual(scaler.mean_[index], observed.mean())
+        self.assertAlmostEqual(scaler.scale_[index], observed.std(ddof=0))
+        for name, values in prepared.items():
+            self.assertEqual(values.shape[1], 200)
+            self.assertTrue(np.isfinite(values).all())
+            missing = datasets[name].samples[feature].isna().to_numpy()
+            np.testing.assert_array_equal(values[missing, index], 0)
+        observed_mask = datasets["TRAIN"].samples[feature].notna().to_numpy()
+        self.assertAlmostEqual(prepared["TRAIN"][observed_mask, index].std(), 1)
+        # Сохранённый preprocessing включает и scaler, и заполнение пропусков.
+        buffer = io.BytesIO()
+        joblib.dump(preprocessing, buffer)
+        buffer.seek(0)
+        restored = joblib.load(buffer)
+        np.testing.assert_allclose(
+            restored.transform(datasets["TEST"].samples.rename(columns=str)), prepared["TEST"],
+        )
+
+    def test_experiment_2_static_lr_and_early_stopping(self):
+        model = experiment_2.RegressionModel(200)
+        self.assertEqual(model.hidden.out_features, 32)
+        self.assertEqual(model.output.in_features, 32)
+        self.assertEqual(sum(isinstance(layer, torch.nn.Linear) for layer in model.modules()), 2)
+        with torch.no_grad():
+            for parameter in model.parameters():
+                parameter.zero_()
+        loader = experiment_2.create_loader(np.zeros((8, 200)), np.zeros(8))
+        with redirect_stdout(io.StringIO()):
+            history, best_epoch = experiment_2.train_model(model, loader, loader, num_epochs=10)
+        # LR остаётся постоянным; early stopping ждёт 5 эпох без улучшения.
+        np.testing.assert_allclose(history["learning_rate"], [1e-2] * 6)
+        self.assertEqual(best_epoch, 1)
+
     def test_split_and_scaler_fit_only_on_training_engines(self):
         with redirect_stdout(io.StringIO()):
             full_train = DatasetEntity(raw_samples(engine_ids=range(1, 101), cycles_per_engine=3))
