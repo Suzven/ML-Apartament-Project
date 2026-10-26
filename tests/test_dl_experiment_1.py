@@ -26,7 +26,7 @@ class DeepLearningTests(unittest.TestCase):
             datasets, prepared, preprocessing = experiment.prepare_datasets(full_train, test)
         self.assertEqual(set(datasets["TRAIN"].engine_ids), set(range(1, 81)))
         self.assertEqual(set(datasets["VALIDATION"].engine_ids), set(range(81, 101)))
-        self.assertEqual(prepared["TRAIN"].shape, (240, 20))
+        self.assertEqual(prepared["TRAIN"].shape, (240, 200))
         scaler = preprocessing
         self.assertEqual(scaler.n_samples_seen_, 240)
         np.testing.assert_allclose(scaler.mean_, datasets["TRAIN"].samples.mean().to_numpy())

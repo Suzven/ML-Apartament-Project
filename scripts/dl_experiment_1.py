@@ -14,9 +14,11 @@ from torch.utils.data import DataLoader, TensorDataset
 if __package__:
     from .entity import DatasetEntity
     from .preprocessing import DataCleaning
+    from .preprocessing.dl_feature_engineering import DLFeatureEngineering
 else:
     from entity import DatasetEntity
     from preprocessing import DataCleaning
+    from preprocessing.dl_feature_engineering import DLFeatureEngineering
 
 DATA_DIRECTORY = Path(__file__).resolve().parent
 REPORT_DIRECTORY = DATA_DIRECTORY.parent / "reports" / "dl_experiment_1"
@@ -102,12 +104,13 @@ def prepare_datasets(full_train, test):
 
     for name, dataset in datasets.items():
         print(f"\n{name} | engines: {dataset.engine_ids.nunique()} | samples: {len(dataset.samples)}")
-        # Только исходные колонки: удаляем engine_id и прежние constant features.
+        # Удаляем engine_id и прежние constant features, затем добавляем историю.
         removed_features = DataCleaning(dataset).run(verbose=False)
+        DLFeatureEngineering(dataset).run()
         print("Removed features (engine_id + constants):", removed_features)
         print(dataset.samples.head())
 
-    # Без генерации признаков: fit scaler только на Train.
+    # История не обучается на targets; fit scaler только на Train.
     preprocessing = StandardScaler()
     prepared = {}
     train_samples = train.samples.rename(columns=str)
